@@ -387,4 +387,4 @@ def kz_lang_district():
     #Реквезиты
     st.sidebar.markdown("---")
     st.sidebar.markdown('''<small>Практикалық жоба | 2024 жылғы маусым-шілде | Айдарбек, Асан, Мұхтархан</small>''',
-                        unsafe_allow_html=True)
+                       unsafe_allow_html=True)
