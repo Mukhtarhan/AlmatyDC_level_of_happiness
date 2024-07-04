@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show Polygon Information on Click</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js" defer></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js" defer></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #style-selector {
+            position: absolute;
+            top: 10px;
+            right: 40px;
+            z-index: 1;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 6px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            z-index: 0;
+        }
+        .calculation-box {
+            position: absolute; top: 10px; left: 10px;
+            background-color: rgba(255, 255, 255, 0.72);
+            padding: 6px;
+            border-radius: 5px;
+            font-size: 14px;
+            max-width: 300px;
+        }
+        .button-container {
+            position: absolute; bottom: 10px; left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1;
+        }
+        .button {
+            padding: 8px 16px;
+            background-color: rgba(128, 128, 128, 0.5);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: rgba(128, 128, 128, 0.8);
+        }
+        /* Стили для рисования полигонов */
+        .mapboxgl-ctrl-group > button.mapboxgl-ctrl-draw_polygon {
+            background-color: rgba(128, 128, 128, 0.5);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .mapboxgl-ctrl-group > button.mapboxgl-ctrl-draw_polygon:hover {
+            background-color: rgba(128, 128, 128, 0.8);
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="calculation-box" id="sidebar"></div>
+<div class="button-container">
+    <!-- <button class="button" id="drawButton">Draw</button> -->
+    <button class="button" onclick="resetMap()">Сбросить</button>
+    <button class="button" onclick="toggleFullScreen()">Во весь экран</button>
+</div>
+<!-- <select id="style-selector">
+    <option value="mapbox://styles/alinach/cluw8q90o000k01qr9v2pa6xt">Рейтинг</option>
+    <option value="mapbox://styles/mapbox/streets-v11">3D здания</option>
+    <option value="mapbox://styles/mapbox/satellite-streets-v11">Спутник</option>
+</select> -->
+
+
+<script>
+    let map, draw, geojson = {};
+    let zoomedToFeature = false;
+
+    window.onload = function() {
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYWxpbmFjaCIsImEiOiJjbGlpcnZpaTgwMTZ4M2twaGo1NjRsNHhhIn0.9jw_R_D1i1nqOtaolld-dQ';
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/alinach/cluw8q90o000k01qr9v2pa6xt',
+            center: [76.879751, 43.24517],
+            zoom: 12
+        });
+
+        map.addControl(new mapboxgl.ScaleControl({
+            maxWidth: 80,
+            unit: 'metric'
+        }));
+
+        draw = new MapboxDraw({
+            displayControlsDefault: false,
+            controls: {
+                polygon: true,
+                trash: true
+            },
+            styles: [
+                // Переопределение стилей для рисования полигонов
+                {
+                    'id': 'gl-draw-polygon-fill',
+                    'type': 'fill',
+                    'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+                    'paint': {
+                        'fill-color': '#183F71', // Синий цвет
+                        'fill-opacity': 0.3
+                    }
+                },
+                {
+                    'id': 'gl-draw-polygon-stroke-active',
+                    'type': 'line',
+                    'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+                    'layout': {
+                        'line-cap': 'round',
+                        'line-join': 'round'
+                    },
+                    'paint': {
+                        'line-color': '#f2d411', // Жёлтый цвет
+                        'line-width': 2
+                    }
+                },
+                // Стили для вершин полигона (точек)
+                {
+                    'id': 'gl-draw-point',
+                    'type': 'circle',
+                    'filter': ['all', ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+                    'paint': {
+                        'circle-radius': 5,
+                        'circle-color': '#183F71' // Жёлтый цвет
+                    }
+                },
+                // Стили для линий полигона
+                {
+                    'id': 'gl-draw-line',
+                    'type': 'line',
+                    'filter': ['all', ['==', '$type', 'LineString'], ['!=', 'mode', 'static']],
+                    'layout': {
+                        'line-cap': 'round',
+                        'line-join': 'round'
+                    },
+                    'paint': {
+                        'line-color': '#0a2952', // Тёмно-синий цвет
+                        'line-width': 2
+                    }
+                }
+            ]
+        });
+        map.addControl(draw);
+
+        map.on('load', function() {
+            draw.changeMode('draw_polygon');
+
+            map.addLayer({
+                'id': '3d-buildings',
+                'source': 'composite',
+                'source-layer': 'building',
+                'filter': ['==', 'extrude', 'true'],
+                'type': 'fill-extrusion',
+                'minzoom': 14,
+                'paint': {
+                    'fill-extrusion-color': '#aaa',
+                    'fill-extrusion-height': [
+                        'interpolate', ['linear'], ['zoom'],
+                        15, 0,
+                        15.05, ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                        'interpolate', ['linear'], ['zoom'],
+                        15, 0,
+                        15.05, ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.6
+                }
+            });
+
+            map.on('draw.create', function(event) {
+                zoomedToFeature = false; // Добавленная строка для сброса переменной zoomedToFeature
+                const data = event.features[0];
+                const centroid = turf.centroid(data.geometry).geometry.coordinates;
+                map.flyTo({
+                    center: centroid,
+                    zoom: 16
+                });
+                updateArea(event);
+            });
+
+            loadGeoJSON();
+        });
+    };
+
+    function updateArea(e) {
+        const features = e.features;
+        if (features.length > 0) {
+            const data = features[0].geometry;
+            if (data.type === 'Polygon') {
+                const centroid = turf.centroid(data).geometry.coordinates;
+                let point = turf.point(centroid);
+                let matchedFeature = geojson.features.find(feature => turf.booleanPointInPolygon(point, feature.geometry));
+                if (matchedFeature) {
+                    document.getElementById('sidebar').innerHTML = generateInfoHTML(matchedFeature.properties);
+                } else {
+                    document.getElementById('sidebar').innerHTML = "No matching polygon found.";
+                }
+
+                const area = turf.area(data); // Area in square meters
+                const area_km2 = area / 1e6; // Area in square kilometers
+                const area_hectares = area / 1e4; // Area in hectares
+                const rounded_area_km2 = area_km2.toFixed(3); // Round area to three decimal places
+
+                const polygon = turf.polygon(data.coordinates);
+                const perimeter = turf.length(polygon, {units: 'kilometers'}) * 1000; // Perimeter in meters
+                const rounded_perimeter_km = (perimeter / 1000).toFixed(3); // Round perimeter to three decimal places and convert to kilometers
+
+                document.getElementById('sidebar').innerHTML += `<hr> <!-- Divider -->
+                                <p>Площадь: <strong>${rounded_area_km2}</strong> км² (${(area_hectares).toFixed(3)} га)</p>
+                                <p>Периметр: <strong>${rounded_perimeter_km}</strong> км</p>`;
+
+                zoomedToFeature = true; // Set zoomedToFeature to true
+
+                setTimeout(() => {
+                    map.flyTo({
+                        center: centroid,
+                        zoom: 16,
+                        pitch: 65,
+                        essential: true
+                    });
+                }, 100);
+            } else {
+                document.getElementById('sidebar').innerHTML = '';
+                alert("Use the draw tools to draw a polygon!");
+            }
+        } else {
+            document.getElementById('sidebar').innerHTML = '';
+            alert("Use the draw tools to draw a polygon!");
+        }
+    }
+
+
+
+
+
+    function generateInfoHTML(props) {
+        let htmlContent = `<div><strong>Информация о районе</strong></div>`;
+        // Add more properties dynamically
+        const propertyDisplayNames = {
+            total_qty: "Численность",
+            avg_age: "Средний возраст",
+            avg_income_amount: "Средний доход",
+            income_qty_product: "Денежный оборот",
+            avg_1m_price: "Средняя цена за кв. метр",
+            avg_income: "Средний доход",
+            // number_buss: "Всего бизнеса",
+            // price_cluster: "Кластер цен",
+            // num_markets: "Рынки",
+            // num_cafe: "Кафе",
+            // num_restoran: "Рестораны",
+            // num_apteka: "Аптеки",
+            // num_med_c: "Медицинские центры",
+            // num_vet_c: "Ветеринарные клиники",
+            // num_fitnes: "Фитнес-центры",
+            // num_beauty: "Салоны красоты",
+            // num_books: "Книжные магазины",
+            // num_trc: "ТРЦ",
+            // num_suvenir: "Сувенирные магазины",
+            // num_electr: "Магазины электроники",
+            // num_bytovaya: "Магазины бытовой техники",
+            // num_notarius: "Нотариусы",
+            // num_copy: "Копировальные центры",
+            // num_remont: "Ремонтные мастерские",
+            // num_obrazovanie: "Образовательные учреждения",
+            // num_ozd_c: "Оздоравительные центры",
+            // num_stomat: "Стоматологии"
+        };
+
+        for (const key in props) {
+            if (props.hasOwnProperty(key) && propertyDisplayNames[key] && key !== 'zid_home') {
+                htmlContent += `<div><strong>${propertyDisplayNames[key]}:</strong> ${props[key]}</div>`;
+            }
+        }
+
+        return htmlContent;
+    }
+
+    function loadGeoJSON() {
+        const geojsonUrl = 'https://raw.githubusercontent.com/alinachrks/fun_house/main/zids.geojson';
+        fetch(geojsonUrl)
+            .then(response => response.json())
+            .then(data => {
+                geojson = data;
+            })
+            .catch(error => console.error('Error loading the geojson data: ', error));
+    }
+
+    function resetMap() {
+        map.flyTo({
+            center: [76.879751, 43.24517],
+            zoom: 12,
+            pitch: 0
+        });
+        draw.deleteAll();
+        document.getElementById('sidebar').innerHTML = '';
+        zoomedToFeature = false; // Добавленная строка для сброса переменной zoomedToFeature
+    }
+
+    function toggleFullScreen() {
+        var button = document.querySelector('.button-container .button:nth-child(2)');
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            button.textContent = 'Свернуть';
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                button.textContent = 'Во весь экран';
+            }
+        }
+    }
+
+    function changeStyle(style) {
+        map.setStyle(style);
+    }
+    document.getElementById('style-selector').addEventListener('change', function() {
+        const styleUrl = this.value;
+
+        map.setStyle(styleUrl);
+
+        if (styleUrl !== 'mapbox://styles/mapbox/streets-v11') {
+            map.removeLayer('3d-buildings');
+            return; // Exit early if not using the 'Streets' style
+        }
+
+        if (!map.getLayer('3d-buildings')) {
+            map.addLayer({
+                'id': '3d-buildings',
+                'source': 'composite',
+                'source-layer': 'building',
+                'filter': ['==', 'extrude', 'true'],
+                'type': 'fill-extrusion',
+                'minzoom': 14,
+                'paint': {
+                    'fill-extrusion-color': '#aaa',
+                    'fill-extrusion-height': [
+                        'interpolate', ['linear'], ['zoom'],
+                        15, 0,
+                        15.05, ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                        'interpolate', ['linear'], ['zoom'],
+                        15, 0,
+                        15.05, ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.6
+                }
+            });
+        }
+    });
+
+</script>
+</body>
+</html>

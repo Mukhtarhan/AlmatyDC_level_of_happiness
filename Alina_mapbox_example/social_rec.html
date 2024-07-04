@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Show polygon information on click</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
+<style>
+    /* Существующие стили */
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    .calculation-box {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: rgba(255, 255, 255, 0.72);
+        padding: 6px;
+        border-radius: 5px;
+        font-size: 14px;
+        max-width: 300px;
+    }
+    .button-container {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 1;
+    }
+    .button {
+        padding: 8px 16px;
+        background-color: rgba(128, 128, 128, 0.5);
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .button:hover {
+        background-color: rgba(128, 128, 128, 0.8);
+    }
+
+    /* Стилизация выпадающего списка */
+    #color-column {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+        width: 200px;
+        background-color: rgba(255, 255, 255, 0.75); /* Полупрозрачный фон */
+        padding: 5px;
+        border-radius: 5px; /* Скругленные углы */
+        font-size: 14px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="calculation-box" id="sidebar"></div>
+<div class="button-container">
+    <button class="button" onclick="resetMap()">Сбросить</button>
+    <button class="button" onclick="toggleFullScreen()">Во весь экран</button>
+</div>
+<select id="color-column" onchange="updatePolygonColors()">
+    <option value="typeof">Рекомендации по объектам</option>
+    <option value="Больницы">Больницы</option>
+    <option value="Детские сады">Детские сады</option>
+    <!-- <option value="Музеи">Музеи</option> -->
+    <option value="Остановки">Остановки</option>
+    <option value="Поликлиники">Поликлиники</option>
+    <option value="Родильные дома">Родильные дома</option>
+    <!-- <option value="Театры">Театры</option> -->
+    <option value="Школы">Школы</option>
+    <!-- <option value="Всего">По всем</option> -->
+</select>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiYWxpbmFjaCIsImEiOiJjbGlpcnZpaTgwMTZ4M2twaGo1NjRsNHhhIn0.9jw_R_D1i1nqOtaolld-dQ';
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/alinach/clvcjhvxf00ie01qzg9jqcm2p',
+    center: [76.879751, 43.24517], // Centered on New York City
+    zoom: 12
+});
+
+map.on('load', () => {
+    // Replace this URL with your own GeoJSON data URL
+    const geojsonUrl = 'https://raw.githubusercontent.com/alinachrks/fun_house/main/rec_points_as_hex_pivot%20(1).geojson';
+
+    // Add a source for your GeoJSON data.
+    map.addSource('custom-data', {
+        'type': 'geojson',
+        'data': geojsonUrl
+    });
+
+    // Add a layer showing your GeoJSON data.
+    map.addLayer({
+        'id': 'custom-data-layer',
+        'type': 'fill',
+        'source': 'custom-data',
+        'paint': {
+            'fill-color': [
+                'case',
+                ['==', ['typeof', ['get', 'Всего']], 'number'],
+                [
+                    'interpolate',
+                    ['linear'],
+                    ['get', 'Всего'],
+                    0, 'rgba(241, 248, 246, 0.4)',        // Светло-серый
+                    2, 'rgba(17, 87, 171, 0.65)',         // Тёмно-синий
+                    3, 'rgba(0, 128, 128, 0.65)',         // Тиркиз
+                    5, 'rgba(255, 255, 0, 0.65)',         // Жёлтый
+                    7, 'rgba(126, 177, 16, 0.65)',        // Светло-зелёный
+                    8, 'rgba(39, 116, 6, 0.8)'           // Тёмно-зелёный
+                ],
+                'rgba(211, 211, 211, 0.4)' // Light gray color for NaN
+            ],
+            'fill-outline-color': 'rgba(151, 161, 169, 0.6)',
+            'line-opacity': 1, // Border opacity
+            'line-color': 'rgba(151, 161, 169, 0.6)' // Border color
+        }
+    });
+
+    // Add a layer for the highlighted polygon outline.
+    map.addLayer({
+        'id': 'highlighted-polygon-outline',
+        'type': 'line',
+        'source': 'custom-data',
+        'filter': ['==', 'id', ''],
+        'paint': {
+            'line-color': 'rgba(0, 0, 0, 1)',
+            'line-width': 2
+        }
+    });
+
+    // When a click event occurs on a feature in the custom data layer,
+    // open a sidebar with information about the polygon and fly to it.
+    map.on('click', 'custom-data-layer', (e) => {
+        const properties = e.features[0].properties;
+        let sidebarContent = '<div style="width: 100%;">';
+        // for (const key in properties) {
+        //     if (properties.hasOwnProperty(key) && properties[key] != '1' && properties[key] !== '2') {
+        //         let displayName;
+        //         let valueDisplay;
+        //         switch (key) {
+        //             case 'typeof':
+        //                 displayName = 'Рекомендации по объектам';
+        //                 break;
+        //             case 'Больницы':
+        //                 displayName = 'Больницы';
+        //                 valueDisplay = properties[key] === 1 ? '<span style="color: green;">Доступно</span>' : '<span style="color: red;">Недоступно</span>';
+        //                 break;
+        //             case 'Детские сады':
+        //                 displayName = 'Детские сады';
+        //                 valueDisplay = properties[key] === 1 ? '<span style="color: green;">Доступно</span>' : '<span style="color: red;">Недоступно</span>';
+        //                 break;
+        //             case 'Музеи':
+        //                 displayName = 'Музеи';
+        //                 valueDisplay = properties[key] === 1 ? '<span style="color: green;">Доступно</span>' : '<span style="color: red;">Недоступно</span>';
+        //                 break;
+        //             case 'Остановки':
+        //                 displayName = 'Остановки';
+        //                 valueDisplay = properties[key] === 1 ? '<span style="color: green;">Доступно</span>' : '<span style="color: red;">Недоступно</span>';
+        //                 break;
+        //             case 'Поликлиники':
+        //                 displayName = 'Поликлиники';
+        //                 valueDisplay = properties[key] === 1 ? '<span style="color: green;">Доступно</span>' : '<span style="color: red;">Недоступно</span>';
+        //                 break;
+        //             case 'Родильные дома':
+        //                 displayName = 'Родильные дома';
+        //                 valueDisplay = properties[key] === 1 ? '<span style="color: green;">Доступно</span>' : '<span style="color: red;">Недоступно</span>';
+        //                 break;
+        //             case 'Театры':
+        //                 displayName = 'Театры';
+        //                 valueDisplay = properties[key] === 1 ? '<span style="color: green;">Доступно</span>' : '<span style="color: red;">Недоступно</span>';
+        //                 break;
+        //             case 'Школы':
+        //                 displayName = 'Школы';
+        //                 valueDisplay = properties[key] === 1 ? '<span style="color: green;">Доступно</span>' : '<span style="color: red;">Недоступно</span>';
+        //                 break;
+        //             case 'Всего':
+        //                 displayName = 'Всего';
+        //                 const totalValue = properties[key];
+        //                 if (totalValue > 7) {
+        //                     valueDisplay = 'Превосходно';
+        //                 } else if (totalValue >= 6 && totalValue <= 7) {
+        //                     valueDisplay = 'Хорошо, но можно лучше';
+        //                 } else if (totalValue >= 4 && totalValue <= 5) {
+        //                     valueDisplay = 'Необходимо срочно исправить ситуацию';
+        //                 } else {
+        //                     valueDisplay = 'Гетто';
+        //                 }
+        //                 break;
+        //             default:
+        //                 displayName = key;
+        //                 valueDisplay = properties[key];
+        //         }
+        //         sidebarContent += `<p><strong>${displayName}:</strong> ${valueDisplay}</p>`;
+        //     }
+        // }
+
+        sidebarContent += '</div>';
+        document.getElementById('sidebar').innerHTML = sidebarContent;
+
+        // Reset the style of all outlines
+        map.setPaintProperty('custom-data-layer', 'fill-outline-color', 'rgba(200, 200, 200, 0.5)');
+        map.setPaintProperty('custom-data-layer', 'fill-outline-width', 1);
+
+        // Set a bold outline for the selected polygon
+        map.setFilter('highlighted-polygon-outline', ['==', 'id', e.features[0].id]);
+        map.setPaintProperty('highlighted-polygon-outline', 'line-width', 4);
+
+        map.flyTo({
+            center: e.lngLat,
+            zoom: 16,
+            essential: true // this animation is considered essential with respect to prefers-reduced-motion
+        });
+    });
+
+
+    // Change the cursor to a pointer when
+    // the mouse is over the custom data layer.
+    map.on('mouseenter', 'custom-data-layer', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    // Change the cursor back to a pointer
+    // when it leaves the custom data layer.
+    map.on('mouseleave', 'custom-data-layer', () => {
+        map.getCanvas().style.cursor = '';
+    });
+});
+
+function resetMap() {
+    map.setFilter('highlighted-polygon-outline', ['==', 'id', '']);
+    map.flyTo({
+        center: [76.879751, 43.24517],
+        zoom: 12,
+        essential: true // this animation is considered essential with respect to prefers-reduced-motion
+    });
+    document.getElementById('sidebar').innerHTML = '';
+}
+
+function toggleFullScreen() {
+    var button = document.querySelector('.button-container .button:nth-child(2)');
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+        button.textContent = 'Свернуть';
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+            button.textContent = 'Во весь экран';
+        }
+    }
+}
+
+
+function updatePolygonColors() {
+    const colorProperty = document.getElementById('color-column').value;
+
+    // Find the minimum and maximum values for the selected color property
+    const features = map.querySourceFeatures('custom-data', {
+        sourceLayer: 'your-source-layer-name' // Update this with your actual source layer name
+    });
+    let minValue = Infinity;
+    let maxValue = -Infinity;
+    features.forEach(feature => {
+        const value = feature.properties[colorProperty];
+        if (typeof value === 'number' && !isNaN(value)) {
+            minValue = Math.min(minValue, value);
+            maxValue = Math.max(maxValue, value);
+        }
+    });
+
+    // Set the paint property with the calculated min and max values
+    map.setPaintProperty('custom-data-layer', 'fill-color', [
+        'match',
+        ['typeof', ['get', colorProperty]],
+        'number',
+        [
+            'interpolate',
+            ['linear'],
+            ['get', colorProperty],
+            minValue, 'rgba(211, 211, 211, 0.55)',
+            maxValue * 0.1, 'rgba(17, 87, 171, 0.65)',     // Dark blue
+            maxValue * 0.25, 'rgba(241, 248, 246, 0.65)',     // Teal
+            maxValue * 0.40, 'rgba(241,194,50, 0.65)',
+            maxValue * 0.70, 'rgba(206,126,0, 0.65)',     // Light green
+            maxValue * 0.90, 'rgba(121,22,22, 0.65)'        // Dark green
+        ],
+        'rgba(211, 211, 211, 0.4)' // Light gray color for NaN
+    ],
+    // If the column contains only 0 and 1, set specific colors for them
+    [
+        'match',
+        ['get', colorProperty],
+        0, 'rgba(255, 0, 0, 0.65)', // Red for 0
+        1, 'rgba(17, 87, 171, 0.65)',  // Dark blue for 1
+        'rgba(211, 211, 211, 0.4)'     // Light gray color for other values
+    ]);
+}
+
+
+</script>
+</body>
+</html>
