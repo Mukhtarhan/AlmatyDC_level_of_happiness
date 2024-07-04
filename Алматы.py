@@ -7,12 +7,7 @@ from almaty_lang_function import eng_lang_almaty
 from almaty_lang_function import en_info_almaty
 from almaty_lang_function_kz import kz_lang_almaty
 from almaty_lang_function_kz import kz_info_almaty
-
 import streamlit.components.v1 as components
-
-
-
-
 
 
 
@@ -62,8 +57,8 @@ def img_to_base64(image_path):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# #Вверхняя юоковая картина
-img_path = "open.png"
+#Вверхняя боковая картина
+img_path = "AlmatyDC_level_of_happiness\open.png"
 img_base64 = img_to_base64(img_path)
 st.sidebar.markdown(
     f'<a href="https://almatydc.kz/"><img src="data:image\png;base64,{img_base64}" class="cover-glow"></a>',
@@ -98,7 +93,7 @@ elif language == "Қазақ":
 if language == "Русский":
     st.markdown("<h1 style = 'text-align: center;'>Данные Города Алматы 🍎</h1>", unsafe_allow_html=True)
     st.markdown("---")
-    df = pd.read_excel("DataBase_for_Project\Алматы.xlsx")
+    df = pd.read_excel("AlmatyDC_level_of_happiness\DataBase_for_Project\Алматы.xlsx")
     option = st.selectbox("Выбрать параметр: ", (
     "Уровень счастья населения", "Безработица", "Выбросы загрязняющих веществ", "Статистика преступности",
     "Протяженность жизни", "Прожиточный минимум", "Цены на рынке жилья", "Заработная плата"))
@@ -137,7 +132,7 @@ if language == "Русский":
     #Настройки боковой панели
     st.sidebar.markdown("---")
     #Нижняя картина в боковой панели
-    img_path = "gh7.jpg"  # Replace with the actual image path
+    img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
     f'<img src="data:image/png;base64,{img_base64}" class="cover-glow">',
@@ -147,6 +142,7 @@ if language == "Русский":
     st.sidebar.markdown("---")
     st.sidebar.markdown('''<small>Практический проект | Июнь-Июль 2024 | Айдарбек, Асан, Мухтархан</small>''',
                                 unsafe_allow_html=True)
+
 #Функция для англ интерфейса
 elif language == "English":
     eng_lang_almaty()
@@ -155,12 +151,10 @@ elif language == "Қазақ":
 
 
 
-
-
 #карта алматы
 if language == "Русский":
     st.markdown("<h1 style = 'text-align: center;'>Карта Районов Алматы 🗺️</h1>", unsafe_allow_html=True)
-    with open("webmap.html", "r", encoding="utf-8") as f:
+    with open("AlmatyDC_level_of_happiness\webmap.html", "r", encoding="utf-8") as f:
         map_html = f.read()
         components.html(map_html, height=600)
 

@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import base64
 import plotly.express as px
-from st_pages import Page, show_pages, add_page_title
 from districts_lang_function import eng_lang_district
 from districts_lang_function_kz import kz_lang_district
 
@@ -54,7 +53,7 @@ def img_to_base64(image_path):
         return base64.b64encode(img_file.read()).decode()
 
 #Вверхняя боковая картина
-img_path = "./open.png"
+img_path = "AlmatyDC_level_of_happiness\open.png"
 img_base64 = img_to_base64(img_path)
 st.sidebar.markdown(
     f'<a href="https://almatydc.kz/"><img src="data:image/png;base64,{img_base64}" class="cover-glow"></a>',
@@ -79,14 +78,14 @@ if language == "Русский":
 
 
     #РАЙОНЫ
-    df1 = pd.read_excel('.\DataBase_for_Project\Цены на рынке жилья.xlsx')
-    df2 = pd.read_excel('.\DataBase_for_Project\Протяженность жизни.xlsx')
-    df3 = pd.read_excel('.\DataBase_for_Project\Безработица.xlsx')
-    df4 = pd.read_excel('.\DataBase_for_Project\Заработная плата.xlsx')
-    df5 = pd.read_excel('.\DataBase_for_Project\Прожиточный минимум.xlsx')
-    df6 = pd.read_excel('.\DataBase_for_Project\Уровень счастья.xlsx')
-    df7 = pd.read_excel('.\DataBase_for_Project\Статистика преступности.xlsx')
-    df8 = pd.read_excel('.\DataBase_for_Project\Выбросы жидких и газообразных загрязняющих веществ.xlsx')
+    df1 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project\Цены на рынке жилья.xlsx')
+    df2 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project\Протяженность жизни.xlsx')
+    df3 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project\Безработица.xlsx')
+    df4 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project\Заработная плата.xlsx')
+    df5 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project\Прожиточный минимум.xlsx')
+    df6 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project\Уровень счастья.xlsx')
+    df7 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project\Статистика преступности.xlsx')
+    df8 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project\Выбросы жидких и газообразных загрязняющих веществ.xlsx')
 
     #Алатауский район
     if opt == "Алатауский":
@@ -412,7 +411,7 @@ if language == "Русский":
     #Настройки боковой панели
     st.sidebar.markdown("---")
     #Нижняя боковая картина
-    img_path = ".\gh7.jpg"  # Replace with the actual image path
+    img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
         f'<img src="data:image/png;base64,{img_base64}" class="cover-glow">',

@@ -60,7 +60,7 @@ def kz_info_almaty():
 def kz_lang_almaty():
     st.markdown("<h1 style = 'text-align: center;'>Алматы Қаласының Деректері🍎</h1>", unsafe_allow_html=True)
     st.markdown("---")
-    df = pd.read_excel("DataBase_for_Project_казак\Алматы_кз.xlsx")
+    df = pd.read_excel("AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Алматы_кз.xlsx")
     option = st.selectbox("Параметрді таңдаңыз: ", (
         "Бақыт деңгейі", "Жұмыссыздық", "Ластаушы заттардың шығарындылары", "Қылмыс статистикасы",
         "Өмірдің ұзақтығы", "Күнкөріс деңгейі", "Тұрғын үй бағасы", "Еңбекақы"))
@@ -99,7 +99,7 @@ def kz_lang_almaty():
     #Боковые настройки
     st.sidebar.markdown("---")
     #Нижняя картина боковая
-    img_path = "gh7.jpg"  # Replace with the actual image path
+    img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
         f'<img src="data:image/png;base64,{img_base64}" class="cover-glow">',
@@ -107,7 +107,7 @@ def kz_lang_almaty():
     )
     #Карта Алматы
     st.markdown("<h1 style = 'text-align: center;'>Алматы Картасы 🗺️</h1>", unsafe_allow_html=True)
-    with open("webmap.html", "r", encoding="utf-8") as f:
+    with open("AlmatyDC_level_of_happiness\webmap.html", "r", encoding="utf-8") as f:
         map_html = f.read()
         components.html(map_html, height=600)
     st.sidebar.markdown("---")

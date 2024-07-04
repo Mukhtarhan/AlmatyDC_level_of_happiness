@@ -61,7 +61,7 @@ def en_info_almaty():
 def eng_lang_almaty():
     st.markdown("<h1 style = 'text-align: center;'>Almaty City Data 🍎</h1>", unsafe_allow_html=True)
     st.markdown("---")
-    df = pd.read_excel("DataBase_for_Project_ENG\Almaty.xlsx")
+    df = pd.read_excel("AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\Almaty.xlsx")
     option = st.selectbox("Select parameter: ", (
         "Happiness level", "Unemployment", "Emissions of pollutants", "Crime statistics",
         "Life expectancy", "Living wage", "Housing market prices", "Income"))
@@ -100,7 +100,7 @@ def eng_lang_almaty():
     #SIDEBAR SETTINGS
     st.sidebar.markdown("---")
     #Down sidebar image
-    img_path = "gh7.jpg"  # Replace with the actual image path
+    img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
         f'<img src="data:image/png;base64,{img_base64}" class="cover-glow">',
@@ -110,7 +110,7 @@ def eng_lang_almaty():
     st.markdown("<h1 style = 'text-align: center;'>Map of Almaty Districts 🗺️</h1>", unsafe_allow_html=True)
     mapObj = folium.Map(location=[43.238949, 76.889709], zoom_start=10.2)
 
-    with open("webmap.html", "r", encoding="utf-8") as f:
+    with open("AlmatyDC_level_of_happiness\webmap.html", "r", encoding="utf-8") as f:
         map_html = f.read()
         components.html(map_html, height=600)
     #Rekveziti

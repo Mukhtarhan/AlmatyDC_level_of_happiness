@@ -54,14 +54,14 @@ def eng_lang_district():
         'Turksib'])
 
     #Districts
-    df1 = pd.read_excel('DataBase_for_Project_ENG\Housing market prices.xlsx')
-    df2 = pd.read_excel('DataBase_for_Project_ENG\Life expectancy.xlsx')
-    df3 = pd.read_excel('DataBase_for_Project_ENG\eUnemployment.xlsx')
-    df4 = pd.read_excel('DataBase_for_Project_ENG\Income.xlsx')
-    df5 = pd.read_excel('DataBase_for_Project_ENG\Living wage.xlsx')
-    df6 = pd.read_excel('DataBase_for_Project_ENG\Happiness level.xlsx')
-    df7 = pd.read_excel('DataBase_for_Project_ENG\Crime statistics.xlsx')
-    df8 = pd.read_excel('DataBase_for_Project_ENG\Emissions of pollutants.xlsx')
+    df1 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\Housing market prices.xlsx')
+    df2 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\Life expectancy.xlsx')
+    df3 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\eUnemployment.xlsx')
+    df4 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\Income.xlsx')
+    df5 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\Living wage.xlsx')
+    df6 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\Happiness level.xlsx')
+    df7 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\Crime statistics.xlsx')
+    df8 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_ENG\Emissions of pollutants.xlsx')
 
     #Alatau district
     if opt == "Alatau":
@@ -378,7 +378,7 @@ def eng_lang_district():
     #SIDEBAR SETTINGS_eng
     st.sidebar.markdown("---")
     #Down sidebar image_eng
-    img_path = "gh7.jpg"  # Replace with the actual image path
+    img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
         f'<img src="data:image/png;base64,{img_base64}" class="cover-glow">',

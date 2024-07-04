@@ -54,14 +54,14 @@ def kz_lang_district():
         'Түрксіб'])
 
     #Районы
-    df1 = pd.read_excel('DataBase_for_Project_казак\Цены на рынке жилья_кз.xlsx')
-    df2 = pd.read_excel('DataBase_for_Project_казак\Протяженность жизни_кз.xlsx')
-    df3 = pd.read_excel('DataBase_for_Project_казак\Безработица_кз.xlsx')
-    df4 = pd.read_excel('DataBase_for_Project_казак\Заработная плата_кз.xlsx')
-    df5 = pd.read_excel('DataBase_for_Project_казак\Прожиточный минимум_кз.xlsx')
-    df6 = pd.read_excel('DataBase_for_Project_казак\Уровень счастья_кз.xlsx')
-    df7 = pd.read_excel('DataBase_for_Project_казак\Статистика преступности_кз.xlsx')
-    df8 = pd.read_excel('DataBase_for_Project_казак\Выбросы жидких и газообразных загрязняющих веществ_кз.xlsx')
+    df1 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Цены на рынке жилья_кз.xlsx')
+    df2 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Протяженность жизни_кз.xlsx')
+    df3 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Безработица_кз.xlsx')
+    df4 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Заработная плата_кз.xlsx')
+    df5 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Прожиточный минимум_кз.xlsx')
+    df6 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Уровень счастья_кз.xlsx')
+    df7 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Статистика преступности_кз.xlsx')
+    df8 = pd.read_excel('AlmatyDC_level_of_happiness\DataBase_for_Project_казак\Выбросы жидких и газообразных загрязняющих веществ_кз.xlsx')
 
     #Алатауский район
     if opt == "Алатау":
@@ -378,7 +378,7 @@ def kz_lang_district():
     #Боковые настройки
     st.sidebar.markdown("---")
     #Нижняя боковая картина
-    img_path = "gh7.jpg"  # Replace with the actual image path
+    img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
         f'<img src="data:image/png;base64,{img_base64}" class="cover-glow">',
