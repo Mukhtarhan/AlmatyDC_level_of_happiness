@@ -17,15 +17,6 @@ st.sidebar.markdown("---")
 st.markdown(
     """
     <style>
-    .st-emotion-cache-1gv3huu {
-        background-color: bisque;
-    }
-    .st-emotion-cache-12fmjuu {
-        background-color: #fff7ed;
-    }
-    .st-emotion-cache-bm2z3a {
-        background-color: #fff7ed;
-    }
     .cover-glow {
         width: 180px;
         height: auto;
@@ -410,11 +401,11 @@ if language == "Русский":
             st.plotly_chart(fig_in, use_container_width=True)
     #Настройки боковой панели
     st.sidebar.markdown("---")
-    # Нижняя картина в боковой панели
+    #Нижняя боковая картина
     img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
-        f'<a href="https://github.com/aydarbek30/AlmatyDC_happiness_level.git"><img src="data:image\png;base64,{img_base64}" class="cover-glow"></a>',
+        f'<a href="https://github.com/aydarbek30/AlmatyDC_level_of_happiness"><img src="data:image\png;base64,{img_base64}" class="cover-glow"></a>',
         unsafe_allow_html=True,
     )
     st.sidebar.markdown("---")
@@ -426,7 +417,6 @@ elif language == "English":
     eng_lang_district()
 elif language == "Қазақ":
     kz_lang_district()
-
 
 
 

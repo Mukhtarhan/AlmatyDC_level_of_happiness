@@ -12,25 +12,22 @@ import streamlit.components.v1 as components
 
 
 
+
+#path streamlit run D:\Projects\Happiness_level_of_population_in_Almaty\pythonProject\Алматы.py
+
+
+
+
 #Интерфейс языка
 language = st.sidebar.selectbox('Язык/Language/Тіл:', ['Русский', 'English', 'Қазақ'])
 st.sidebar.markdown("---")
+
 
 
 #Дизайн боковых картин
 st.markdown(
     """
     <style>
-    
-    .st-emotion-cache-1gv3huu {
-        background-color: bisque;
-    }
-    .st-emotion-cache-12fmjuu {
-        background-color: #fff7ed;
-    }
-    .st-emotion-cache-bm2z3a {
-        background-color: #fff7ed;
-    }
     .cover-glow {
         width: 180px;
         height: auto;
@@ -57,7 +54,7 @@ def img_to_base64(image_path):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-#Вверхняя боковая картина
+# #Вверхняя боковая картина
 img_path = "AlmatyDC_level_of_happiness\open.png"
 img_base64 = img_to_base64(img_path)
 st.sidebar.markdown(
@@ -135,19 +132,20 @@ if language == "Русский":
     img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
-        f'<a href="https://github.com/aydarbek30/AlmatyDC_happiness_level.git"><img src="data:image\png;base64,{img_base64}" class="cover-glow"></a>',
-        unsafe_allow_html=True,
+        f'<a href="https://github.com/aydarbek30/AlmatyDC_level_of_happiness"><img src="data:image\png;base64,{img_base64}" class="cover-glow"></a>',
+         unsafe_allow_html=True,
     )
     #Реквезиты
     st.sidebar.markdown("---")
     st.sidebar.markdown('''<small>Практический проект | Июнь-Июль 2024 | Айдарбек, Асан, Мухтархан</small>''',
                                 unsafe_allow_html=True)
-
 #Функция для англ интерфейса
 elif language == "English":
     eng_lang_almaty()
 elif language == "Қазақ":
     kz_lang_almaty()
+
+
 
 
 
@@ -157,5 +155,3 @@ if language == "Русский":
     with open("AlmatyDC_level_of_happiness\webmap.html", "r", encoding="utf-8") as f:
         map_html = f.read()
         components.html(map_html, height=600)
-
-    
