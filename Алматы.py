@@ -159,8 +159,4 @@ if language == "Русский":
         components.html(map_html, height=600)
 
     
-        
-
-
-
-ddd
+    
