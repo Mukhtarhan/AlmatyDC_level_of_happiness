@@ -155,8 +155,7 @@ elif language == "Қазақ":
 if language == "Русский":
     st.markdown("<h1 style = 'text-align: center;'>Карта Районов Алматы 🗺️</h1>", unsafe_allow_html=True)
     with open("AlmatyDC_level_of_happiness\webmap.html", "r", encoding="utf-8") as f:
-        map_html = f.read()ы
+        map_html = f.read()
         components.html(map_html, height=600)
 
     
-ы
