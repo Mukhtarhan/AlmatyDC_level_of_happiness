@@ -135,8 +135,8 @@ if language == "Русский":
     img_path = "AlmatyDC_level_of_happiness\gh7.jpg"  # Replace with the actual image path
     img_base64 = img_to_base64(img_path)
     st.sidebar.markdown(
-    f'<img src="data:image/png;base64,{img_base64}" class="cover-glow">',
-    unsafe_allow_html=True,
+        f'<a href="https://github.com/aydarbek30/AlmatyDC_happiness_level.git"><img src="data:image\png;base64,{img_base64}" class="cover-glow"></a>',
+        unsafe_allow_html=True,
     )
     #Реквезиты
     st.sidebar.markdown("---")
